@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/SRO.Api/SRO.Api.csproj" />
+    <Project Path="src/SRO.Domain/SRO.Domain.csproj" />
+    <Project Path="src/SRO.Functions/SRO.Functions.csproj" />
+    <Project Path="src/SRO.Infrastructure/SRO.Infrastructure.csproj" />
+    <Project Path="src/SRO.Shared/SRO.Shared.csproj" />
+    <Project Path="src/SRO.Web/SRO.Web.csproj" />
+  </Folder>
+</Solution>
