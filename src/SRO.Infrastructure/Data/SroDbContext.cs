@@ -18,7 +18,6 @@ public class SroDbContext : DbContext
     public DbSet<Match> Matches => Set<Match>();
     public DbSet<Team> Teams => Set<Team>();
     public DbSet<Member> Members => Set<Member>();
-    public DbSet<Assignment> Assignments => Set<Assignment>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

@@ -20,6 +20,5 @@ public class Team : BaseEntity
     public bool IsSupplier { get; set; } = false;
     public SupplierCategorie SupplierCategorie { get; set; } = SupplierCategorie.Geen;
 
-    public ICollection<Assignment> Assignments { get; set; } = new List<Assignment>();
     public ICollection<Member> Members { get; set; } = new List<Member>();
 }

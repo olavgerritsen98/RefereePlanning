@@ -8,22 +8,28 @@ public class MatchConfiguration : IEntityTypeConfiguration<Match>
 {
     public void Configure(EntityTypeBuilder<Match> builder)
     {
-        builder.ToTable("Matches");
         builder.HasKey(m => m.Id);
 
-        builder.Property(m => m.WedstrijdCode).HasMaxLength(50).IsRequired();
-        builder.Property(m => m.AanvangsTijd).HasMaxLength(10);
-        builder.Property(m => m.ThuisTeam).HasMaxLength(200);
-        builder.Property(m => m.UitTeam).HasMaxLength(200);
-        builder.Property(m => m.Klasse).HasMaxLength(100);
-        builder.Property(m => m.Competitie).HasMaxLength(100);
-        builder.Property(m => m.Accommodatie).HasMaxLength(200);
-        builder.Property(m => m.Veld).HasMaxLength(100);
-        builder.Property(m => m.Plaats).HasMaxLength(100);
-        builder.Property(m => m.Scheidsrechters).HasMaxLength(500);
+        builder.Property(m => m.WedstrijdCode).IsRequired().HasMaxLength(50);
+        builder.Property(m => m.ThuisTeam).IsRequired().HasMaxLength(100);
+        builder.Property(m => m.UitTeam).IsRequired().HasMaxLength(100);
+        
+        // Enums opslaan als strings voor betere leesbaarheid in de database
+        builder.Property(m => m.Status)
+            .HasConversion<string>()
+            .HasMaxLength(20);
 
-        builder.HasIndex(m => new { m.TenantId, m.WedstrijdCode }).IsUnique();
+        builder.Property(m => m.AssignmentStatus)
+            .HasConversion<string>()
+            .HasMaxLength(20);
 
+        builder.Property(m => m.Period)
+            .HasConversion<string>()
+            .HasMaxLength(20);
+
+        builder.Property(m => m.FinalRefereeName).HasMaxLength(100);
+
+        // Relatie met Team inrichten
         builder.HasOne(m => m.AssignedTeam)
             .WithMany()
             .HasForeignKey(m => m.AssignedTeamId)

@@ -1,14 +1,12 @@
 namespace SRO.Domain.Entities;
 
-public enum MatchStatus
-{
-    Gepland,
-    Afgelast,
-    Gespeeld
-}
+public enum MatchStatus { Gepland, Afgelast, Gespeeld }
+public enum AssignmentStatus { Draft, TeamAssigned, PendingNames, Finalized }
+public enum SeasonPeriod { NajaarVeld, ZaalHelft1, ZaalHelft2, VoorjaarVeld }
 
 public class Match : BaseEntity
 {
+    // --- Sportlink Data ---
     public string WedstrijdCode { get; set; } = string.Empty;
     public DateTime WedstrijdDatum { get; set; }
     public string AanvangsTijd { get; set; } = string.Empty;
@@ -23,7 +21,14 @@ public class Match : BaseEntity
     public MatchStatus Status { get; set; } = MatchStatus.Gepland;
     public bool IsThuis { get; set; } = true;
 
-    // Assignment (nullable)
+    // --- SRO Plannings Logica ---
+    public SeasonPeriod Period { get; set; } 
+    public AssignmentStatus AssignmentStatus { get; set; } = AssignmentStatus.Draft;
+    
+    // Directe een-op-veel relatie met Team
     public Guid? AssignedTeamId { get; set; }
     public Team? AssignedTeam { get; set; }
+    
+    // Naam van de specifieke scheidsrechter zodra de teambegeleider deze invult
+    public string? FinalRefereeName { get; set; } 
 }
