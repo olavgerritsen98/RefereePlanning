@@ -1,5 +1,8 @@
+using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
 using SRO.Api.Auth;
+using SRO.Domain.Constraints;
+using SRO.Domain.Engine;
 using SRO.Domain.Interfaces;
 using SRO.Infrastructure.Data;
 using SRO.Infrastructure.Services;
@@ -30,8 +33,18 @@ builder.Services.AddHttpClient<ISportlinkClient, SportlinkClient>(client =>
 // Services
 builder.Services.AddScoped<ISyncService, SyncService>();
 
+// Assignment Engine & Constraints
+builder.Services.AddScoped<IAssignmentConstraint, TimeConflictConstraint>();
+builder.Services.AddScoped<IAssignmentConstraint, LevelConstraint>();
+builder.Services.AddScoped<AssignmentEngine>();
+builder.Services.AddScoped<IPlanningService, PlanningService>();
+
 // API
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    });
 builder.Services.AddOpenApi();
 
 var app = builder.Build();
