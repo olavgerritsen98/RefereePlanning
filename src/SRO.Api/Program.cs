@@ -39,6 +39,19 @@ builder.Services.AddScoped<IAssignmentConstraint, LevelConstraint>();
 builder.Services.AddScoped<AssignmentEngine>();
 builder.Services.AddScoped<IPlanningService, PlanningService>();
 
+// CORS - allow Blazor WASM frontend
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy.WithOrigins(
+                builder.Configuration.GetSection("AllowedOrigins").Get<string[]>()
+                ?? ["http://localhost:5075", "https://localhost:7109"])
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
+
 // API
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
@@ -54,6 +67,7 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
+app.UseCors("AllowFrontend");
 app.UseHttpsRedirection();
 app.MapControllers();
 

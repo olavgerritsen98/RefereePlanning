@@ -1,0 +1,168 @@
+@page "/dashboard"
+@using SRO.Web.Services
+@inject MatchApiClient Api
+
+<PageTitle>Dashboard - Scheidsrechtersplanning</PageTitle>
+
+<h2 class="mb-4">Scheidsrechtersplanning</h2>
+
+@* --- Control Panel --- *@
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="row align-items-end g-3">
+            <div class="col-auto">
+                <label class="form-label fw-semibold">Seizoensperiode</label>
+                <select class="form-select" @bind="_selectedPeriod" @bind:after="LoadMatches">
+                    @foreach (var p in Enum.GetValues<SeasonPeriod>())
+                    {
+                        <option value="@p">@FormatPeriod(p)</option>
+                    }
+                </select>
+            </div>
+            <div class="col-auto">
+                <button class="btn btn-primary btn-lg" @onclick="GeneratePlanning" disabled="@_isGenerating">
+                    @if (_isGenerating)
+                    {
+                        <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                        <span>Bezig met plannen...</span>
+                    }
+                    else
+                    {
+                        <span>⚡ Genereer Automatische Planning</span>
+                    }
+                </button>
+            </div>
+            @if (_planningResult != null)
+            {
+                <div class="col-auto">
+                    <div class="alert alert-success mb-0 py-2 px-3">
+                        ✅ @_planningResult.Message
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@* --- Data Table --- *@
+@if (_isLoading)
+{
+    <div class="d-flex align-items-center gap-3 my-5">
+        <div class="spinner-border text-primary" role="status"></div>
+        <span class="text-muted">Wedstrijden laden...</span>
+    </div>
+}
+else if (_matches.Count == 0)
+{
+    <div class="alert alert-info">
+        Geen wedstrijden gevonden voor deze periode. Synchroniseer eerst via de API.
+    </div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-striped table-hover align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>Datum</th>
+                    <th>Tijd</th>
+                    <th>Wedstrijd</th>
+                    <th>Klasse</th>
+                    <th>Toegewezen Team</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var match in _matches)
+                {
+                    <tr>
+                        <td>@match.Datum</td>
+                        <td>@match.Tijd</td>
+                        <td>
+                            <strong>@match.ThuisTeam</strong> – @match.UitTeam
+                            @if (match.IsKnkvMatch)
+                            {
+                                <span class="badge bg-warning text-dark ms-1">KNKV</span>
+                            }
+                            @if (match.IsReserveAssignment)
+                            {
+                                <span class="badge bg-info ms-1">Reserve</span>
+                            }
+                        </td>
+                        <td><small class="text-muted">@match.Klasse</small></td>
+                        <td>
+                            @if (!string.IsNullOrEmpty(match.AssignedTeam))
+                            {
+                                <span class="fw-semibold">@match.AssignedTeam</span>
+                            }
+                            else
+                            {
+                                <span class="text-muted fst-italic">— niet toegewezen —</span>
+                            }
+                        </td>
+                        <td>@StatusBadge(match.AssignmentStatus)</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <p class="text-muted small">@_matches.Count wedstrijden weergegeven</p>
+}
+
+@code {
+    private SeasonPeriod _selectedPeriod = SeasonPeriod.VoorjaarVeld;
+    private List<MatchDto> _matches = [];
+    private bool _isLoading = true;
+    private bool _isGenerating;
+    private PlanningResultDto? _planningResult;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadMatches();
+    }
+
+    private async Task LoadMatches()
+    {
+        _isLoading = true;
+        _matches = await Api.GetMatchesAsync(_selectedPeriod);
+        _isLoading = false;
+    }
+
+    private async Task GeneratePlanning()
+    {
+        _isGenerating = true;
+        _planningResult = null;
+        StateHasChanged();
+
+        _planningResult = await Api.GeneratePlanningAsync(_selectedPeriod);
+        await LoadMatches();
+
+        _isGenerating = false;
+    }
+
+    private static string FormatPeriod(SeasonPeriod p) => p switch
+    {
+        SeasonPeriod.NajaarVeld => "Najaar (Veld)",
+        SeasonPeriod.ZaalHelft1 => "Zaal - Helft 1",
+        SeasonPeriod.ZaalHelft2 => "Zaal - Helft 2",
+        SeasonPeriod.VoorjaarVeld => "Voorjaar (Veld)",
+        _ => p.ToString()
+    };
+
+    private static RenderFragment StatusBadge(string status) => builder =>
+    {
+        var (css, label) = status switch
+        {
+            "Draft" => ("bg-secondary", "Draft"),
+            "TeamAssigned" => ("bg-primary", "Team Toegewezen"),
+            "PendingNames" => ("bg-warning text-dark", "Wacht op Namen"),
+            "Finalized" => ("bg-success", "Definitief"),
+            _ => ("bg-secondary", status)
+        };
+
+        builder.OpenElement(0, "span");
+        builder.AddAttribute(1, "class", $"badge {css}");
+        builder.AddContent(2, label);
+        builder.CloseElement();
+    };
+}
