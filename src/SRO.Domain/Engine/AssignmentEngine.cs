@@ -40,8 +40,12 @@ public class AssignmentEngine
         foreach (var team in supplierTeams)
             assignmentCounts[team.Id] = allMatches.Count(m => m.AssignedTeamId == team.Id);
 
-        // Sort draft matches by date to assign chronologically
-        var sortedMatches = draftMatches.OrderBy(m => m.WedstrijdDatum).ThenBy(m => m.AanvangsTijd).ToList();
+        // Sort: hardest matches first (Wageningen 2-5 thuiswedstrijden), then chronologically
+        var sortedMatches = draftMatches
+            .OrderByDescending(m => IsWageningenTopTeam(m.ThuisTeam))
+            .ThenBy(m => m.WedstrijdDatum)
+            .ThenBy(m => m.AanvangsTijd)
+            .ToList();
 
         foreach (var match in sortedMatches)
         {
@@ -58,6 +62,10 @@ public class AssignmentEngine
                 match.AssignmentStatus = AssignmentStatus.TeamAssigned;
                 assignmentCounts[eligibleTeam.Id] = assignmentCounts.GetValueOrDefault(eligibleTeam.Id, 0) + 1;
                 result.Assigned++;
+
+                // Wedstrijden van Wageningen 1-5 krijgen reserve-vinkje
+                if (IsWageningenTopTeam(match.ThuisTeam) || IsWageningenTopTeam(match.UitTeam))
+                    match.IsReserveAssignment = true;
             }
             else
             {
@@ -76,5 +84,17 @@ public class AssignmentEngine
                 return false;
         }
         return true;
+    }
+
+    /// <summary>
+    /// Checks if the team name refers to Wageningen 1 through 5 (top teams that are hardest to plan).
+    /// </summary>
+    private static bool IsWageningenTopTeam(string teamName)
+    {
+        if (string.IsNullOrEmpty(teamName)) return false;
+        var lower = teamName.ToLowerInvariant();
+        return lower.Contains("wageningen") &&
+               (lower.EndsWith(" 1") || lower.EndsWith(" 2") || lower.EndsWith(" 3") ||
+                lower.EndsWith(" 4") || lower.EndsWith(" 5"));
     }
 }

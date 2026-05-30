@@ -29,6 +29,9 @@ public class MatchConfiguration : IEntityTypeConfiguration<Match>
 
         builder.Property(m => m.FinalRefereeName).HasMaxLength(100);
 
+        builder.Property(m => m.IsKnkvMatch).HasDefaultValue(false);
+        builder.Property(m => m.IsReserveAssignment).HasDefaultValue(false);
+
         // Relatie met Team inrichten
         builder.HasOne(m => m.AssignedTeam)
             .WithMany()

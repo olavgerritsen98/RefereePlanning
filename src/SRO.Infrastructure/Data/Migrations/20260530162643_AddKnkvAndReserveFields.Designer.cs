@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SRO.Infrastructure.Data;
 
@@ -11,9 +12,11 @@ using SRO.Infrastructure.Data;
 namespace SRO.Infrastructure.Data.Migrations
 {
     [DbContext(typeof(SroDbContext))]
-    partial class SroDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260530162643_AddKnkvAndReserveFields")]
+    partial class AddKnkvAndReserveFields
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

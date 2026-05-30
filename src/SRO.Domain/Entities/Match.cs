@@ -24,6 +24,8 @@ public class Match : BaseEntity
     // --- SRO Plannings Logica ---
     public SeasonPeriod Period { get; set; } 
     public AssignmentStatus AssignmentStatus { get; set; } = AssignmentStatus.Draft;
+    public bool IsKnkvMatch { get; set; } = false;
+    public bool IsReserveAssignment { get; set; } = false;
     
     // Directe een-op-veel relatie met Team
     public Guid? AssignedTeamId { get; set; }

@@ -30,9 +30,9 @@ public class PlanningService : IPlanningService
             .Where(m => m.Period == period && m.Status == MatchStatus.Gepland)
             .ToListAsync();
 
-        // 3. Filter down to only Draft matches that need assignment
+        // 3. Filter down to only Draft matches that need assignment (exclude KNKV matches)
         var draftMatches = allMatchesForPeriod
-            .Where(m => m.AssignmentStatus == AssignmentStatus.Draft)
+            .Where(m => m.AssignmentStatus == AssignmentStatus.Draft && !m.IsKnkvMatch)
             .ToList();
 
         // 4. Run the engine
