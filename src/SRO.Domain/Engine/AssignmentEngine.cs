@@ -40,9 +40,10 @@ public class AssignmentEngine
         foreach (var team in supplierTeams)
             assignmentCounts[team.Id] = allMatches.Count(m => m.AssignedTeamId == team.Id);
 
-        // Sort: hardest matches first (Wageningen 2-5 thuiswedstrijden), then chronologically
+        // Sort: wedstrijdsport reserve-matches eerst (harder te plannen, hoger niveau nodig),
+        // dan chronologisch
         var sortedMatches = draftMatches
-            .OrderByDescending(m => IsWageningenTopTeam(m.ThuisTeam))
+            .OrderByDescending(m => IsWedstrijdsportReserve(m))
             .ThenBy(m => m.WedstrijdDatum)
             .ThenBy(m => m.AanvangsTijd)
             .ToList();
@@ -63,8 +64,10 @@ public class AssignmentEngine
                 assignmentCounts[eligibleTeam.Id] = assignmentCounts.GetValueOrDefault(eligibleTeam.Id, 0) + 1;
                 result.Assigned++;
 
-                // Wedstrijden van Wageningen 1-5 krijgen reserve-vinkje
-                if (IsWageningenTopTeam(match.ThuisTeam) || IsWageningenTopTeam(match.UitTeam))
+                // Wedstrijdsport-wedstrijden van Wageningen 4/5 (niet 1-3, want die zijn IsKnkvMatch)
+                // krijgen reserve-vinkje: KNKV kan later alsnog een scheids toewijzen.
+                // Pas donderdag is duidelijk of het team echt moet fluiten.
+                if (IsWedstrijdsportReserve(match))
                     match.IsReserveAssignment = true;
             }
             else
@@ -87,14 +90,26 @@ public class AssignmentEngine
     }
 
     /// <summary>
-    /// Checks if the team name refers to Wageningen 1 through 5 (top teams that are hardest to plan).
+    /// Detecteert wedstrijdsport-wedstrijden die een reserve-toewijzing krijgen.
+    /// Dit zijn thuiswedstrijden van Wageningen 4 en 5. 
+    /// (Wageningen 1, 2, 3 + U19-1 zijn al uitgesloten via IsKnkvMatch.)
+    /// 
+    /// Reserve = team staat paraat als backup. Pas op donderdag is duidelijk of
+    /// KNKV alsnog een scheidsrechter stuurt. Zo ja → reserve gedeactiveerd.
     /// </summary>
-    private static bool IsWageningenTopTeam(string teamName)
+    private static bool IsWedstrijdsportReserve(Match match)
+    {
+        return IsWageningen4or5(match.ThuisTeam);
+    }
+
+    /// <summary>
+    /// Checks if team name is Wageningen 4 or 5 (wedstrijdsport, geen gegarandeerde KNKV-scheids).
+    /// </summary>
+    private static bool IsWageningen4or5(string teamName)
     {
         if (string.IsNullOrEmpty(teamName)) return false;
         var lower = teamName.ToLowerInvariant();
         return lower.Contains("wageningen") &&
-               (lower.EndsWith(" 1") || lower.EndsWith(" 2") || lower.EndsWith(" 3") ||
-                lower.EndsWith(" 4") || lower.EndsWith(" 5"));
+               (lower.EndsWith(" 4") || lower.EndsWith(" 5"));
     }
 }

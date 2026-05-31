@@ -503,4 +503,10 @@ Alleen de genoemde supplier-teams fluiten. Overige teams niet.
 **Vraag 11 (Hoeveel wedstrijden per team):**
 Per periode gelijkelijk verdelen over alle supplier-teams. Geen maximum per speelweekend. Binnen elke periode ≈ evenveel per team.
 
+
+
+## Vraag 12 (Hoe omgaan met afgelastingen):**Afgelaste wedstrijden worden verwijderd uit de planning, en de beurt gaat terug in de teller.
+
+## Vraag 13 Hoe zit het met bondswedstrijden? Moeten wij bonds scheidsrechters aanleveren?
+
 </details>
